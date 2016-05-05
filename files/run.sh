@@ -2,6 +2,7 @@
 set -u
 mrun="mysql -u ${ZS_DBUser} -p${ZS_DBPassword} -h ${ZS_DBHost} -P ${ZS_DBPort} -D ${ZS_DBName}"
 retry=24
+MPID=0
 echo "Waiting for database server"
 until $mrun -e 'SELECT `itemid` FROM `item_condition` WHERE `item_conditionid` = 1' &>/dev/null; do
     echo "Waiting for database server, it's still not available"
@@ -28,12 +29,12 @@ set -e
 terminate () {
     retry=10
     echo "Caught SIGTERM signal, shutting down..."
-    while ps -C mysql | grep -q mysql; do
+    while ps $MPID | grep -q zbdb_maintenance; do
         echo "waiting for maintencance to finish..."
         retry=`expr $retry - 1`
         if [ $retry -eq 0 ]; then
             echo "maintencance is taking too much time, killing the process"
-            pkill mysql
+            kill $MPID
             break
         fi
         sleep 6
@@ -41,9 +42,12 @@ terminate () {
     exit
 }
 
-trap terminate SIGINT SIGTERM
+trap terminate SIGINT SIGTERM EXIT
 
 while true; do
-    sleep $(( 60 * 60 * ${ZS_DBMaintInterval} ))
-    /usr/sbin/zbdb_maintenance.sh
+    sleep $(( 60 * 60 * ${ZS_DBMaintInterval} )) &
+    wait
+    /usr/sbin/zbdb_maintenance.sh &
+    MPID=$!
+    wait $MPID
 done

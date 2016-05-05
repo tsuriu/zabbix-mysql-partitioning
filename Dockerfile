@@ -15,12 +15,14 @@ ENV \
 COPY files/ /tmp/
 
 RUN \
+    yum -y update && \
+    yum install -y mariadb hostname && \
+    yum clean all
+
+RUN \
     install -m 755 /tmp/run.sh / && \
     install -m 755 /tmp/zbdb_maintenance.sh /usr/sbin/ && \
     install /tmp/zabbix_partitioning.sql /usr/share/ && \
-    yum -y update && \
-    yum install -y mariadb hostname && \
-    yum clean all && \
     rm -rf /tmp/*
 
 # Set TERM env to avoid mysql client error message "TERM environment variable not set" when running from inside the container
