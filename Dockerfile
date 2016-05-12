@@ -1,4 +1,4 @@
-FROM centos:centos7
+FROM alpine:latest
 MAINTAINER Ilya Trushchenko inbox@whitehat.com.ua
 
 ENV \
@@ -15,11 +15,8 @@ ENV \
 COPY files/ /tmp/
 
 RUN \
-    yum -y update && \
-    yum install -y mariadb hostname && \
-    yum clean all
-
-RUN \
+    apk add --update mariadb-client && \
+    rm -rf /var/cache/apk/* && \
     install -m 755 /tmp/run.sh / && \
     install -m 755 /tmp/zbdb_maintenance.sh /usr/sbin/ && \
     install /tmp/zabbix_partitioning.sql /usr/share/ && \
