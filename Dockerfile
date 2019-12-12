@@ -1,5 +1,5 @@
 FROM alpine:latest
-MAINTAINER Ilya Trushchenko inbox@whitehat.com.ua
+MAINTAINER Tulio Amancio (tsuriu) tsuriu@tuta.io
 
 ENV \
   ZS_DBHost=localhost \
